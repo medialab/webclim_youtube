@@ -16,15 +16,13 @@ from selenium.webdriver.support.ui import WebDriverWait
 from dotenv import load_dotenv
 
 
-
-
-def get_data_video(v_url,curr_depth, vid_id,parent_id = 'None',level='None',order='None'):
+def get_data_video(v_url, curr_depth, vid_id, parent_id = 'None', level='None', order='None'):
         data = np.array([])
-        code =  v_url.split('v=')[1][0:11]
+        code = v_url.split('v=')[1][0:11]
         vid_suff = code
         request = youtube.videos().list(
         part="snippet,contentDetails,statistics",
-        id=vid_suff
+        id = vid_suff
         )
         response = request.execute()
         try:
@@ -32,7 +30,7 @@ def get_data_video(v_url,curr_depth, vid_id,parent_id = 'None',level='None',orde
             main_info = response['items'][0]['snippet']
 
             channel_name = main_info['channelTitle']
-            video_title= main_info['title']
+            video_title = main_info['title']
             channel_ids = main_info['channelId']
             published_ats = main_info['publishedAt']
             video_ids = response['items'][0]['id']
@@ -51,10 +49,9 @@ def get_data_video(v_url,curr_depth, vid_id,parent_id = 'None',level='None',orde
                 comments = 'non'
             duration = re.findall(r'\d+', response['items'][0]['contentDetails']['duration'])
             time_to_run = time_collect(duration)
-            #time_to_run = 5
             request_channel = youtube.channels().list(
-            part="statistics",
-            id= main_info['channelId']
+            part = "statistics",
+            id = main_info['channelId']
         )
             data = np.append(data,np.array([vid_id,video_title,view_counts,likes,dislikes,comments , video_ids,channel_name,channel_ids,published_ats,duration]))
             channels_info = request_channel.execute()
@@ -68,21 +65,20 @@ def get_data_video(v_url,curr_depth, vid_id,parent_id = 'None',level='None',orde
             print('Error')
         return data,time_to_run
 
+
 def time_collect(duration):
-    if (len(duration)>2):
-            return 5*60
-    elif(len(duration)==2):
-        if (int(duration[1])<10):
+    if len(duration) > 2:
+        return 5*60
+    elif len(duration) == 2:
+        if int(duration[1]) < 10:
             return int(duration[1])*60
         else:
             return 5*60
-    elif(len(duration)==1):
+    elif(len(duration) == 1):
         return int(duration[0])
 
 
-def random_walk(depth, vid_to_start,youtube):
-    # depth 1 --> look for first level of recommendation
-    # depth 2 --> click on a recommendation then move to the next video with its recommendation
+def random_walk(depth, vid_to_start, youtube):
     data = pd.DataFrame([], columns=['id', 'video_title', 'view_counts', 'likes', 'dislikes', 'comments', 'video_id',
                                      'channel_name', 'channel_id', 'published_at', 'duration', 'subscriber_count',
                                      'video_url', 'level', 'parent_id', 'order'])
@@ -96,7 +92,6 @@ def random_walk(depth, vid_to_start,youtube):
     driver.get(f'{baseurl}/watch?v={vid_to_start}')
     vid = f'{baseurl}/watch?v={vid_to_start}'
     list_youtube = []
-
     vid_id = uuid.uuid4()
     time.sleep(10)
     try:
@@ -116,29 +111,21 @@ def random_walk(depth, vid_to_start,youtube):
     wait = WebDriverWait(driver, 10)
     presence = EC.presence_of_element_located
     wait.until(presence((By.ID, "related")))
-    list_recommendation = driver.find_elements_by_xpath(('//*[@id="dismissible"]/div/div[1]/a'))
-    # print(list_recommendation)
+    list_recommendation = driver.find_elements_by_xpath('//*[@id="dismissible"]/div/div[1]/a')
     recos = []
     for i in range(0, len(list_recommendation)):
         recos.append(list_recommendation[i].get_attribute("href"))
     for reco in range(0, 10):
         reco_id = uuid.uuid4()
-        # reco_data,duration = get_data_video(list_recommendation[reco].get_attribute("href"),depth_current,reco_id, vid_id)
         wait = WebDriverWait(driver, 10)
         presence = EC.presence_of_element_located
         wait.until(presence((By.ID, "related")))
         data_reco = mini_walk(recos[reco], reco_id, vid_id, driver, data, reco)
-        # print(data_reco.shape[1])
-        # print(data.shape[1])
-        # r_series = pd.Series(data_reco, index = data.columns)
-
         data = data.append(data_reco, ignore_index=True)
     for reco_s in range(10, len(recos)):
         reco_data, duration = get_data_video(recos[reco_s], depth_current, reco_id, vid_id, 1, reco_s)
         r_series = pd.Series(reco_data, index=data.columns)
-
         data = data.append(r_series, ignore_index=True)
-
     driver.close()
     path = 'data/' + vid_to_start + 'experiment_2.csv'
     data.to_csv(path, index=False)
@@ -171,16 +158,15 @@ def mini_walk(vid_url, reco_id, main_id, driver, data_s, order):
     list_recommendation = driver.find_elements_by_xpath(('//*[@id="dismissible"]/div/div[1]/a'))
     for reco in range(0, len(list_recommendation)):
         wait = WebDriverWait(driver, 10)
-
         wait.until(presence((By.ID, "related")))
         reco_id_t = uuid.uuid4()
         reco_data, duration = get_data_video(list_recommendation[reco].get_attribute("href"), depth_current, reco_id_t,
                                              reco_id, 2, reco)
         r_series = pd.Series(reco_data, index=data_s.columns)
-
         data = data.append(r_series, ignore_index=True)
 
     return data
+
 
 if __name__=="__main__":
     load_dotenv()
