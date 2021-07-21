@@ -1,0 +1,4 @@
+pandas==1.2.4
+google-api-python-client==1.12.8
+selenium==3.141.0
+python-dotenv==0.18.0

@@ -1,0 +1,13 @@
+.env
+.minetrc
+
+*.csv
+
+.ipynb_checkpoints/
+*.ipynb
+
+.idea
+
+__pycache__
+
+.DS_Store
