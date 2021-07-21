@@ -4,7 +4,7 @@ simulate the user behaviour.
 ### 1- Experiment 1: Collect the recommendation based on search word(s)
 Run the following command
 ```
-  python3 code/experiment_2.py "['search_word_1','search_word_2']"
+  python3 code/experiment_1.py "['search_word_1','search_word_2']"
 ```
 After running the code csv files will be created for every search word in the data file. The collection is done for the recommendations in the main search page. Then for every video in the main list the system will go through each and collect
 the recommended/related videos. 
