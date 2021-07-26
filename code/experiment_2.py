@@ -127,7 +127,7 @@ def random_walk(depth, vid_to_start, youtube):
         r_series = pd.Series(reco_data, index=data.columns)
         data = data.append(r_series, ignore_index=True)
     driver.close()
-    path = 'data/' + vid_to_start + 'experiment_2.csv'
+    path = 'data/' + vid_to_start + '_experiment_2.csv'
     data.to_csv(path, index=False)
 
 
@@ -147,7 +147,7 @@ def mini_walk(vid_url, reco_id, main_id, driver, data_s, order):
 
     vid_id = uuid.uuid4()
     curr = 0
-    x_data, duration = get_data_video(f'{baseurl}/watch?v={code}', curr, vid_id, main_id, 1, order)
+    x_data, duration = get_data_video(f'{baseurl}/watch?v={code}', curr, reco_id, main_id, 1, order)
     time.sleep(duration)
     a_series = pd.Series(x_data, index=data_s.columns)
     data = data.append(a_series, ignore_index=True)
