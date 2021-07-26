@@ -135,7 +135,7 @@ def random_walk(depth, search_word, youtube):
                     print('no ad')
 
                 time.sleep(30)
-    path = 'data/' + search_word + 'experiment_1.csv'
+    path = 'data/' + search_word + '_experiment_1.csv'
     data.to_csv(path, index=False)
     return data
 
