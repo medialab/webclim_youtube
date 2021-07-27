@@ -1,14 +1,24 @@
 # YouTube Recommendation data collection
 This reporistory contains two approahes to collect data from youtube with web scraping. The aim of these experiments is to 
 simulate the user behaviour.
-### 1- Experiment 1: Collect the recommendation based on search word(s)
+## General installation
+
+The code was developped on Python 3.8.10.
+
+To install the needed libraries, run in your terminal:
+
+```
+pip install -r requirements.txt
+```
+## Data Collection
+### Experiment 1: Collect the recommendation based on search word(s)
 Run the following command
 ```
   python3 code/experiment_1.py "['search_word_1','search_word_2']"
 ```
 After running the code csv files will be created for every search word in the data file. The collection is done for the recommendations in the main search page. Then for every video in the main list the system will go through each and collect
 the recommended/related videos. 
-### 1- Experiment 2: Collect the recommendation based on starting with a video_id
+### Experiment 2: Collect the recommendation based on starting with a video_id
 Run the following command
 ```
   python3 code/experiment_2.py "['video_id_1','video_id_2']"
