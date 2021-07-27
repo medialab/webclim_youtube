@@ -1,5 +1,5 @@
 # YouTube Recommendation data collection
-This reporistory contains two approahes to collect data from youtube with web scraping. The aim of these experiments is to 
+This repository contains two approaches to collect data from YouTube with web scraping. The aim of these experiments is to 
 simulate the user behaviour.
 ## General installation
 
