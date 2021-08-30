@@ -65,7 +65,7 @@ def get_data_video(v_url, curr_depth, vid_id, parent_id = 'None', level='None', 
             print('Error')
         return data,time_to_run
 
-
+# for how much time to run the video
 def time_collect(duration):
     if len(duration) > 2:
         return 5*60
@@ -77,8 +77,8 @@ def time_collect(duration):
     elif(len(duration) == 1):
         return int(duration[0])
 
-
-def random_walk(depth, vid_to_start, youtube):
+#
+def collect_recommendation_first_level(depth, vid_to_start, youtube):
     data = pd.DataFrame([], columns=['id', 'video_title', 'view_counts', 'likes', 'dislikes', 'comments', 'video_id',
                                      'channel_name', 'channel_id', 'published_at', 'duration', 'subscriber_count',
                                      'video_url', 'level', 'parent_id', 'order'])
@@ -91,7 +91,6 @@ def random_walk(depth, vid_to_start, youtube):
     driver.get("http://youtube.com")
     driver.get(f'{baseurl}/watch?v={vid_to_start}')
     vid = f'{baseurl}/watch?v={vid_to_start}'
-    list_youtube = []
     vid_id = uuid.uuid4()
     time.sleep(10)
     try:
@@ -99,29 +98,34 @@ def random_walk(depth, vid_to_start, youtube):
         button.click()
     except:
         print('no ad')
-
-    # time.sleep(30)
     curr = 0
     x_data, duration = get_data_video(vid, curr, vid_id)
+    # the duration accounts for either full of the video if it is less than 10 mins otherwise the video will run for 5 mins
+    # you can replace this with less time like 20 second to make the experiment faster but then the emulating of user behaviour
+    # can get effected
     time.sleep(duration)
     a_series = pd.Series(x_data, index=data.columns)
     data = data.append(a_series, ignore_index=True)
 
     depth_current = 0
+    # wait for recommendation to show
     wait = WebDriverWait(driver, 10)
     presence = EC.presence_of_element_located
     wait.until(presence((By.ID, "related")))
     list_recommendation = driver.find_elements_by_xpath('//*[@id="dismissible"]/div/div[1]/a')
     recos = []
+    # get urls
     for i in range(0, len(list_recommendation)):
         recos.append(list_recommendation[i].get_attribute("href"))
+    # for the first ten recommendations collect the data and visit each video using second level method
     for reco in range(0, 10):
         reco_id = uuid.uuid4()
         wait = WebDriverWait(driver, 10)
         presence = EC.presence_of_element_located
         wait.until(presence((By.ID, "related")))
-        data_reco = mini_walk(recos[reco], reco_id, vid_id, driver, data, reco)
+        data_reco = second_level(recos[reco], reco_id, vid_id, driver, data, reco)
         data = data.append(data_reco, ignore_index=True)
+    # collect the data for the rest of the recommendations in level one and append all
     for reco_s in range(10, len(recos)):
         reco_data, duration = get_data_video(recos[reco_s], depth_current, reco_id, vid_id, 1, reco_s)
         r_series = pd.Series(reco_data, index=data.columns)
@@ -130,8 +134,8 @@ def random_walk(depth, vid_to_start, youtube):
     path = 'data/' + vid_to_start + '_experiment_2.csv'
     data.to_csv(path, index=False)
 
-
-def mini_walk(vid_url, reco_id, main_id, driver, data_s, order):
+# collect recommendation in second level after clicking on one related video in the first level
+def second_level(vid_url, reco_id, main_id, driver, data_s, order):
     data = pd.DataFrame([], columns=['id', 'video_title', 'view_counts', 'likes', 'dislikes', 'comments', 'video_id',
                                      'channel_name', 'channel_id', 'published_at', 'duration', 'subscriber_count',
                                      'video_url', 'level', 'parent_id', 'order'])
@@ -148,6 +152,9 @@ def mini_walk(vid_url, reco_id, main_id, driver, data_s, order):
     vid_id = uuid.uuid4()
     curr = 0
     x_data, duration = get_data_video(f'{baseurl}/watch?v={code}', curr, reco_id, main_id, 1, order)
+    # the duration accounts for either full of the video if it is less than 10 mins otherwise the video will run for 5 mins
+    # you can replace this with less time like 20 second to make the experiment faster but then the emulating of user behaviour
+    # can get effected
     time.sleep(duration)
     a_series = pd.Series(x_data, index=data_s.columns)
     data = data.append(a_series, ignore_index=True)
@@ -156,10 +163,12 @@ def mini_walk(vid_url, reco_id, main_id, driver, data_s, order):
     presence = EC.presence_of_element_located
     wait.until(presence((By.ID, "related")))
     list_recommendation = driver.find_elements_by_xpath(('//*[@id="dismissible"]/div/div[1]/a'))
+    # collect data for all recommendations
     for reco in range(0, len(list_recommendation)):
         wait = WebDriverWait(driver, 10)
         wait.until(presence((By.ID, "related")))
         reco_id_t = uuid.uuid4()
+
         reco_data, duration = get_data_video(list_recommendation[reco].get_attribute("href"), depth_current, reco_id_t,
                                              reco_id, 2, reco)
         r_series = pd.Series(reco_data, index=data_s.columns)
@@ -170,9 +179,8 @@ def mini_walk(vid_url, reco_id, main_id, driver, data_s, order):
 
 if __name__=="__main__":
     load_dotenv()
-    # the list_is correspond to the id of channels [OANN, Tony Heller]
     api_key = os.getenv('YOUTUBE_TOKEN')
     youtube = build('youtube', 'v3', developerKey=api_key)
     videos = ast.literal_eval(sys.argv[1])
     for video in videos:
-        random_walk(1, video,youtube)
+        collect_recommendation_first_level(1, video,youtube)
