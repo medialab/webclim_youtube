@@ -67,7 +67,7 @@ def get_data_video(v_url, curr_depth, vid_id,history='None', parent_id = 'None',
             time_to_run = 0
         return data,time_to_run
 
-
+# specify video run time
 def time_collect(duration):
     if len(duration) > 2:
         return 5*60
@@ -79,7 +79,7 @@ def time_collect(duration):
     elif(len(duration) == 1):
         return int(duration[0])
 
-
+# choose a random set of videos from the provided csv and sixth video from the most viewed ones and not from the 5 videos
 def choose_set_videos(videos_flagged, run):
     videos_visit = videos_flagged.sample(n=5)
     indexs_remove = list(videos_visit.index)
@@ -88,13 +88,13 @@ def choose_set_videos(videos_flagged, run):
 
     return videos_visit, first_video
 
+# first level of recommendation collection
 def collect_recommendation_first_level(depth, vid_to_start, youtube,driver,history='None'):
     data = pd.DataFrame([], columns=['id', 'video_title', 'view_counts', 'likes', 'dislikes', 'comments', 'video_id',
                                      'channel_name', 'channel_id', 'published_at', 'duration', 'subscriber_count',
                                      'video_url', 'level', 'parent_id', 'order','history'])
 
     baseurl = "http://youtube.com"
-    #driver.get("http://youtube.com")
     driver.get(f'{baseurl}/watch?v={vid_to_start}')
     vid = f'{baseurl}/watch?v={vid_to_start}'
     list_youtube = []
@@ -120,7 +120,6 @@ def collect_recommendation_first_level(depth, vid_to_start, youtube,driver,histo
     list_recommendation = driver.find_elements_by_xpath('//*[@id="dismissible"]/div/div[1]/a')
     recos = []
     for i in range(0, len(list_recommendation)):
-        print('here')
         recos.append(list_recommendation[i].get_attribute("href"))
     for reco in range(0, 10):
         reco_id = uuid.uuid4()
@@ -140,7 +139,7 @@ def collect_recommendation_first_level(depth, vid_to_start, youtube,driver,histo
 
     return data
 
-
+#second level of recommendation collection
 def collect_recommendation_second_level(vid_url, reco_id, main_id, driver, data_s, order,history):
     data = pd.DataFrame([], columns=['id', 'video_title', 'view_counts', 'likes', 'dislikes', 'comments', 'video_id',
                                      'channel_name', 'channel_id', 'published_at', 'duration', 'subscriber_count',
@@ -189,6 +188,7 @@ def full_run(videos_visit, test_video):
 
     baseurl = "http://youtube.com"
     driver.get("http://youtube.com")
+# Number of videos to run before starting the data collection
     for i in range(0, 5):
         video_di = videos_visit['video_id'].iloc[i]
         driver.get(f'{baseurl}/watch?v={video_di}')
@@ -212,7 +212,11 @@ def full_run(videos_visit, test_video):
     dur = time_collect(test_video['duration'])
     #time.sleep(dur)
     time.sleep(12)
+    # start the collection of the recommendations
     data_collection = collect_recommendation_first_level(1, test_video['video_id'], youtube, driver, list(videos_visit['video_id']))
+    # control group setting, first visit the same video we started the collection from in the previous experiment
+    #if you want to remove control group just comment thess line and their data from return
+
     options = webdriver.ChromeOptions()
     options.add_argument("start-maximized")
     options.add_experimental_option("excludeSwitches", ["enable-automation"])
@@ -231,7 +235,6 @@ def full_run(videos_visit, test_video):
     dur = time_collect(test_video['duration'])
     #time.sleep(dur)
     time.sleep(10)
-    # control group to run: if you want to remove control group just comment this line and its data from return
     data_collection_2 = collect_recommendation_first_level(1, test_video['video_id'], youtube, driver)
     return data_collection, data_collection_2
 
