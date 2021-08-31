@@ -118,6 +118,7 @@ def collect_recommendation_first_level(depth, vid_to_start, youtube):
     for i in range(0, len(list_recommendation)):
         recos.append(list_recommendation[i].get_attribute("href"))
     # for the first ten recommendations collect the data and visit each video using second level method
+    # 0-10 10 recommendations
     for reco in range(0, 10):
         reco_id = uuid.uuid4()
         wait = WebDriverWait(driver, 10)

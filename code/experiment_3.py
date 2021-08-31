@@ -245,7 +245,6 @@ if __name__=="__main__":
     load_dotenv()
     api_key = os.getenv('YOUTUBE_TOKEN')
     youtube = build('youtube', 'v3', developerKey=api_key)
-    youtube = build('youtube', 'v3', developerKey=api_key)
     file_name = sys.argv[1]
     count_to_run = int(sys.argv[2])
     videos_to_choose_from = pd.read_csv(file_name)

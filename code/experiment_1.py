@@ -106,6 +106,8 @@ def collect_recommendations(depth, search_word, youtube):
         except:
             print('no ad')
         curr = 0
+        # curr is the current depth we are at it is 0 since we are at the main search page
+        # you don't need to play with the the depth numbers
         x_data, duration = get_data_video(vid, curr, vid_id,youtube)
         # the duration accounts for either full of the video if it is less than 10 mins otherwise the video will run for 5 mins
         # you can replace this with less time like 20 second to make the experiment faster but then the emulating of user behaviour
